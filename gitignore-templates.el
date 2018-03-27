@@ -58,6 +58,12 @@
   (unless (member name (gitignore-templates-names))
     (user-error "Invaild template name %s" name))
   (unless (assoc name gitignore-templates-alist)
+    ;; -------------------------------------------------------------------------
+    ;; https://developer.github.com/v3/#rate-limiting says "For unauthenticated
+    ;; requests, the rate limit allows for up to 60 requests per hour." A
+    ;; work-around is to download the file from the git repo, for example,
+    ;; https://raw.githubusercontent.com/github/gitignore/master/Elisp.gitignore
+    ;; -------------------------------------------------------------------------
     (let* ((response (gitignore-templates--request
                       (concat "https://api.github.com/gitignore/templates/"
                               name)))
