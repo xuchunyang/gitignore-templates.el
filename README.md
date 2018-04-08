@@ -1,4 +1,4 @@
-# gitignore-templates.el - Access GitHub .gitignore templates
+# gitignore-templates.el - Access GitHub .gitignore templates [![Melpa](https://melpa.org/packages/gitignore-templates-badge.svg)](https://melpa.org/#/gitignore-templates)
 
 `gitignore-templates.el` is an Emacs package for accessing the [GitHub .gitignore templates](https://developer.github.com/v3/gitignore/).
 
