@@ -26,16 +26,12 @@
 
 ;;; Code:
 
-(require 'json)
 (require 'url)
 
 (defvar url-http-end-of-headers)
 
 (defvar gitignore-templates-names nil
   "List of names of available templates.")
-
-(defvar gitignore-templates-alist nil
-  "List of (name . content).")
 
 (defun gitignore-url-to-string (url)
   (with-current-buffer (url-retrieve-synchronously url)
