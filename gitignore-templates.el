@@ -37,39 +37,27 @@
 (defvar gitignore-templates-alist nil
   "List of (name . content).")
 
-(defun gitignore-templates--request (url)
-  "Make a request for URL and return the response body."
+(defun gitignore-url-to-string (url)
   (with-current-buffer (url-retrieve-synchronously url)
-    (set-buffer-multibyte t)
-    (goto-char url-http-end-of-headers)
-    (let ((json-array-type 'list))
-      (json-read))))
+    (prog1 (buffer-substring (1+ url-http-end-of-headers)
+                             (point-max))
+      (kill-buffer))))
 
 (defun gitignore-templates-names ()
   "Return list of names of available templates."
   (unless gitignore-templates-names
     (setq gitignore-templates-names
-          (gitignore-templates--request
-           "https://api.github.com/gitignore/templates")))
+          (split-string
+           (gitignore-url-to-string "https://www.gitignore.io/api/list")
+           "[,\n]" t)))
   gitignore-templates-names)
 
 (defun gitignore-templates (name)
   "Return .gitignore template for NAME."
   (unless (member name (gitignore-templates-names))
     (user-error "Invaild template name %s" name))
-  (unless (assoc name gitignore-templates-alist)
-    ;; -------------------------------------------------------------------------
-    ;; https://developer.github.com/v3/#rate-limiting says "For unauthenticated
-    ;; requests, the rate limit allows for up to 60 requests per hour." A
-    ;; work-around is to download the file from the git repo, for example,
-    ;; https://raw.githubusercontent.com/github/gitignore/master/Elisp.gitignore
-    ;; -------------------------------------------------------------------------
-    (let* ((response (gitignore-templates--request
-                      (concat "https://api.github.com/gitignore/templates/"
-                              name)))
-           (content (cdr (assq 'source response))))
-      (push (cons name content) gitignore-templates-alist)))
-  (cdr (assoc name gitignore-templates-alist)))
+  (gitignore-url-to-string (concat "https://www.gitignore.io/api/"
+                                   name)))
 
 ;;;###autoload
 (defun gitignore-templates-insert (name)
