@@ -1,8 +1,8 @@
 ;;; gitignore-templates.el --- Create .gitignore using GitHub or gitignore.io API -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2018  Xu Chunyang
+;; Copyright (C) 2018, 2020  Xu Chunyang
 
-;; Author: Xu Chunyang <mail@xuchunyang.me>
+;; Author: Xu Chunyang
 ;; Homepage: https://github.com/xuchunyang/gitignore-templates.el
 ;; Keywords: tools
 ;; Package-Requires: ((emacs "24.3"))
