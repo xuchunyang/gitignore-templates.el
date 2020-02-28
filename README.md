@@ -1,4 +1,4 @@
-# gitignore-templates.el - Create .gitignore using GitHub or gitignore.io API
+# Create .gitignore using GitHub or gitignore.io API
 
 [![Melpa](https://melpa.org/packages/gitignore-templates-badge.svg)](https://melpa.org/#/gitignore-templates)
 
