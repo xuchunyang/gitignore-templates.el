@@ -69,7 +69,8 @@
   (unless gitignore-templates-names
     (setq gitignore-templates-names
           (pcase gitignore-templates-api
-            ('gitignore.io
+            ;; Emacs 24.3 and before do not support quote pattern
+            (`gitignore.io
              (split-string (gitignore-templates--url-to-string
                             "https://www.gitignore.io/api/list")
                            "[,\n]" t))
@@ -84,7 +85,7 @@
     (user-error "Invaild template name %s" name))
   (unless (assoc name gitignore-templates-alist)
     (pcase gitignore-templates-api
-      ('gitignore.io
+      (`gitignore.io
        (let ((content (gitignore-templates--url-to-string
                        (concat "https://www.gitignore.io/api/" name))))
          (push (cons name content) gitignore-templates-alist)))
