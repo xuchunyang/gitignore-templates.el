@@ -50,34 +50,42 @@
 (defvar gitignore-templates-alist nil
   "List of (name . content).")
 
-(defun gitignore-templates--url-to-string (url)
-  (with-current-buffer (url-retrieve-synchronously url)
-    (set-buffer-multibyte t)
-    (prog1 (buffer-substring (1+ url-http-end-of-headers)
-                             (point-max))
-      (kill-buffer))))
+(defun gitignore-templates--url-to-string (url &optional header-option-alist)
+  (let ((url-request-method "GET")
+        (url-request-extra-headers header-option-alist))
+    (with-current-buffer (url-retrieve-synchronously url)
+      (set-buffer-multibyte t)
+      (prog1 (buffer-substring (1+ url-http-end-of-headers)
+                               (point-max))
+        (kill-buffer)))))
 
-(defun gitignore-templates--url-to-json (url)
-  (with-current-buffer (url-retrieve-synchronously url)
-    (set-buffer-multibyte t)
-    (goto-char url-http-end-of-headers)
-    (prog1 (let ((json-array-type 'list))
-             (json-read))
-      (kill-buffer))))
+(defun gitignore-templates--url-to-json (url &optional header-option-alist)
+  (let ((url-request-method "GET")
+        (url-request-extra-headers header-option-alist))
+    (with-current-buffer (url-retrieve-synchronously url)
+      (set-buffer-multibyte t)
+      (goto-char url-http-end-of-headers)
+      (prog1 (let ((json-array-type 'list))
+               (json-read))
+        (kill-buffer)))))
 
 (defun gitignore-templates-names ()
   "Return list of names of available templates."
   (unless gitignore-templates-names
     (setq gitignore-templates-names
           (pcase gitignore-templates-api
-            ;; Emacs 24.3 and before do not support quote pattern
+            ;; To express equality, Emacs 24 and before only support backquote pattern
+            ;; Newer version supports quote pattern, like 'gitignore.io
             (`gitignore.io
              (split-string (gitignore-templates--url-to-string
                             "https://www.gitignore.io/api/list")
                            "[,\n]" t))
-            (_
+            (`github
              (gitignore-templates--url-to-json
-              "https://api.github.com/gitignore/templates")))))
+              "https://api.github.com/gitignore/templates"
+              '(("Accept" . "application/vnd.github.v3+json"))))
+            (_
+             (user-error "Unknown API %s" gitignore-templates-api)))))
   gitignore-templates-names)
 
 (defun gitignore-templates (name)
@@ -90,7 +98,7 @@
        (let ((content (gitignore-templates--url-to-string
                        (concat "https://www.gitignore.io/api/" name))))
          (push (cons name content) gitignore-templates-alist)))
-      (_
+      (`github
        ;; -------------------------------------------------------------------------
        ;; https://developer.github.com/v3/#rate-limiting says "For unauthenticated
        ;; requests, the rate limit allows for up to 60 requests per hour." A
@@ -101,7 +109,9 @@
                          (concat "https://api.github.com/gitignore/templates/"
                                  name)))
               (content (cdr (assq 'source response))))
-         (push (cons name content) gitignore-templates-alist)))))
+         (push (cons name content) gitignore-templates-alist)))
+      (_
+       (user-error "Unknown API %s" gitignore-templates-api))))
   (cdr (assoc name gitignore-templates-alist)))
 
 ;;;###autoload
